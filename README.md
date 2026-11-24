@@ -188,7 +188,7 @@ py main.py research --app "Resend" --url "https://resend.com/docs"
 ```bash
 py main.py serve --port 8000
 ```
-*Open [http://localhost:8000/index.html]((http://localhost:8000/index.html)) in any browser.*
+*Open [http://localhost:8000/index.html](http://localhost:8000/index.html) in any browser.*
 
 ---
 
