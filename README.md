@@ -186,9 +186,9 @@ py main.py research --app "Resend" --url "https://resend.com/docs"
 
 #### 6. Serve the Interactive Dashboard Locally
 ```bash
-py main.py serve --port 8000
+py main.py serve --port 8001
 ```
-*Open [http://localhost:8000/index.html](http://localhost:8000/index.html) in any browser.*
+*Open [http://localhost:8001/index.html]((http://localhost:8001/index.html)) in any browser.*
 
 ---
 
