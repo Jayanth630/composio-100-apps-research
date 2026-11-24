@@ -73,30 +73,60 @@ def show_audit():
         return
     with open(AUDIT_PATH, "r", encoding="utf-8") as f:
         audit = json.load(f)
-    metrics = audit["metrics"]
+    metrics = audit.get("metrics", {})
+    scope = metrics.get("dataset_scope", {})
+    sample = metrics.get("audit_sample_metrics", {})
     print("=" * 65)
     print(" COMPOSIO RESEARCH ACCURACY VERIFICATION AUDIT")
     print("=" * 65)
-    print(" OVERALL 100-APP ACCURACY TRAJECTORY:")
-    pipe = metrics["overall_100_apps_pipeline"]
-    print(f"   Pass 1 (Raw Scraper/Agent):     {pipe['pass1_raw_agent_accuracy']}")
-    print(f"   Pass 2 (Verification Loops):    {pipe['pass2_verification_loop_accuracy']}  ({pipe['accuracy_lift_automated']} automated lift)")
-    print(f"   Final (Human Escalation):       {pipe['final_verified_accuracy']}")
-    print("\n STRESS-TEST CHALLENGE SAMPLE (25 High-Ambiguity Apps):")
-    sample = metrics["stress_test_sample_25"]
-    print(f"   Sample Pass 1 Accuracy:         {sample['pass1_accuracy']}")
-    print(f"   Sample Pass 2 Accuracy:         {sample['pass2_accuracy']}")
-    print(f"   Sample Final Accuracy:          {sample['final_human_accuracy']}")
+    print(" DATASET SCOPE & METHODOLOGY:")
+    print(f"   Total Catalog Platforms:        {scope.get('total_research_catalog', 100)}")
+    print(f"   Target Audit Sample Size:       {scope.get('audit_sample_size', 25)} high-ambiguity edge cases")
+    print(f"   Sampling Methodology:          {scope.get('sampling_method', 'Stratified cross-category')}")
+    print("\n STRESS-TEST CHALLENGE SAMPLE ACCURACY PROGRESSION (25 APPS):")
+    print(f"   Pass 1 (Raw Scraper/Agent):     {sample.get('pass1_raw_agent_accuracy')}")
+    print(f"   Pass 2 (Verification Loops):    {sample.get('pass2_automated_loop_accuracy')}  (+{sample.get('automated_accuracy_gain')} automated lift)")
+    print(f"   Escalated to Human Review:      {sample.get('escalated_to_human_count')}")
+    print(f"   Final (Human Escalation):       {sample.get('final_verified_accuracy')}")
     print("\n ERROR TAXONOMY RESOLVED BY LOOPS:")
-    for err, desc in sample["error_taxonomy"].items():
+    for err, desc in sample.get("error_taxonomy", {}).items():
         print(f"   - {err}: {desc}")
     print("=" * 65)
+
+def run_research_single(app_name: str, hint_url: str = None, category: str = "General"):
+    print(f"Executing genuine research agent for '{app_name}'...")
+    agent = ComposioAppResearcher()
+    result = agent.research_app(app_name, hint_url, category)
+    print("\n" + "=" * 60)
+    print(f" RESEARCH RESULT: {result.name}")
+    print("=" * 60)
+    print(f" Category:         {result.category}")
+    print(f" Primary Auth:     {result.auth_primary}")
+    print(f" All Auth Methods: {', '.join(result.auth_methods)}")
+    print(f" Access Model:     {result.access_model}")
+    print(f" Self-Serve:       {'Yes' if result.is_self_serve else 'No'}")
+    print(f" Verdict:          {result.buildability.verdict}")
+    print(f" Primary Blocker:  {result.buildability.blocker}")
+    print(f" API Protocols:    {', '.join(result.api_surface.protocols)} ({result.api_surface.breadth})")
+    print(f" MCP Ecosystem:    {result.api_surface.mcp_status}")
+    print(f" Evidence URL:     {result.evidence.docs_url}")
+    print(f" Confidence Score: {result.confidence_score}")
+    print(f" Human Review Req: {'Yes' if result.needs_human_review else 'No'}")
+    print(f" Evidence Trail:   {result.evidence.verification_notes}")
+    print("=" * 60)
+
+class QuietHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/favicon.ico':
+            self.send_response(204)
+            self.end_headers()
+            return
+        super().do_GET()
 
 def serve_dashboard(port=8000):
     web_dir = Path(__file__).resolve().parent
     os.chdir(web_dir)
-    handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("", port), handler) as httpd:
+    with socketserver.TCPServer(("", port), QuietHandler) as httpd:
         print(f"Serving Composio Case Study & Dashboard at http://localhost:{port}/index.html")
         print("Press Ctrl+C to stop.")
         try:
@@ -106,7 +136,10 @@ def serve_dashboard(port=8000):
 
 def main():
     parser = argparse.ArgumentParser(description="Composio AI Product Ops 100-App Research Agent CLI")
-    parser.add_argument("command", choices=["status", "run", "verify", "audit", "serve"], help="Command to execute")
+    parser.add_argument("command", choices=["status", "run", "verify", "audit", "serve", "research"], help="Command to execute")
+    parser.add_argument("--app", type=str, default="Resend", help="App name for research command")
+    parser.add_argument("--url", type=str, default=None, help="Documentation URL for research command")
+    parser.add_argument("--category", type=str, default="General", help="Category for research command")
     parser.add_argument("--port", type=int, default=8000, help="Port for dashboard web server")
     args = parser.parse_args()
 
@@ -120,6 +153,8 @@ def main():
         show_audit()
     elif args.command == "serve":
         serve_dashboard(args.port)
+    elif args.command == "research":
+        run_research_single(args.app, args.url, args.category)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

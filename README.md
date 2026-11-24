@@ -92,16 +92,16 @@ The agent is engineered to eliminate hallucination in developer documentation re
 
 Accuracy was rigorously benchmarked across a representative **25-app stratified stress-test challenge sample** containing high-friction edge cases:
 
-```
-OVERALL 100-APP ACCURACY TRAJECTORY:
-  Pass 1 (Raw Scraper/Agent):     74.0%
-  Pass 2 (Verification Loops):    94.0%  (+20.0% automated accuracy lift)
-  Final (Human Escalation):       99.0%
+### Methodology & Sample Scope Distinction
+- **100-App Research Catalog**: The full dataset captures all 100 developer platforms (78 Ready Today, 19 Gated, 2 CLI wrappers, 1 Blocked; 79 Self-Serve, 21 Commercial Gated). All 100 evidence URLs are validated live HTTP 200 documentation endpoints.
+- **25-App Stress-Test Audit Sample**: To isolate failure modes and measure verification efficacy, the audit specifically targeted 25 high-ambiguity platforms across all 10 categories (disguised paywalls, Basic auth headers, CLI tools, enterprise regulatory reviews).
 
-STRESS-TEST CHALLENGE SAMPLE (25 High-Ambiguity Apps):
-  Pass 1 Accuracy:                24.0%  (6/25 on difficult edge cases)
-  Pass 2 Accuracy:                92.0%  (23/25 resolved autonomously)
-  Final Accuracy:                100.0%  (25/25 with human escalation)
+```
+STRESS-TEST CHALLENGE SAMPLE ACCURACY PROGRESSION (25 APPS):
+  Pass 1 (Raw Scraper / Agent):            24.0%  (6/25 on difficult edge cases)
+  Pass 2 (5 Automated Verification Loops): 92.0%  (23/25 resolved autonomously; +68.0% automated lift)
+  Escalated to Human Review:                2/25  (Amazon SP-API SigV4 & NotebookLM licensing)
+  Final Ground Truth Accuracy:            100.0%  (25/25 verified)
 ```
 
 ### Top Errors Caught by Verification Loops
@@ -178,7 +178,13 @@ py analyze_patterns.py
 ```
 *Output: Generates exact percentage breakdowns for auth methods, category gating, verdicts, and blockers.*
 
-#### 5. Serve the Interactive Dashboard Locally
+#### 5. Dynamically Research Any New Application
+```bash
+py main.py research --app "Resend" --url "https://resend.com/docs"
+```
+*Output: Connects live to the documentation endpoint, validates HTTP status and canonical redirects, detects auth schemes, checks access model and MCP availability, and returns a verified Pydantic result with confidence scoring.*
+
+#### 6. Serve the Interactive Dashboard Locally
 ```bash
 py main.py serve --port 8000
 ```
