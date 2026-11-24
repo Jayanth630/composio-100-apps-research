@@ -1,0 +1,2549 @@
+# build_dataset.py
+# Generates the verified dataset of all 100 apps across 10 categories for Composio Agent Research
+
+import json
+from pathlib import Path
+
+apps_data = [
+    # Category 1: CRM and Sales (1-10)
+    {
+        "id": 1,
+        "name": "Salesforce",
+        "category": "CRM and Sales",
+        "website": "https://salesforce.com",
+        "description": "Enterprise cloud CRM and customer relationship management platform.",
+        "auth_methods": ["OAuth 2.0 (Web Server, JWT Bearer, Client Credentials)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Dev Org) / Gated (Enterprise Production)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "SOAP", "GraphQL", "Bulk API", "Streaming Pub/Sub"],
+            "breadth": "High (500+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None for sandbox (Free Developer Edition org); production requires enterprise seat license & Connected App setup."
+        },
+        "evidence": {
+            "docs_url": "https://developer.salesforce.com/docs",
+            "verification_notes": "Free Developer Org provides instant self-serve API access and OAuth2 Connected App configuration."
+        }
+    },
+    {
+        "id": 2,
+        "name": "HubSpot",
+        "category": "CRM and Sales",
+        "website": "https://hubspot.com",
+        "description": "Inbound marketing, sales pipeline, and customer service CRM suite.",
+        "auth_methods": ["OAuth 2.0", "Private App Access Tokens (Bearer)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Developer Portal & Sandbox)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Composio Native / Community MCP",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free developer account allows instant sandbox testing and Private App token generation."
+        },
+        "evidence": {
+            "docs_url": "https://developers.hubspot.com/docs/api/overview",
+            "verification_notes": "HubSpot migrated from legacy API keys to Private App Tokens and OAuth2. Free developer accounts provide full API testbeds."
+        }
+    },
+    {
+        "id": 3,
+        "name": "Pipedrive",
+        "category": "CRM and Sales",
+        "website": "https://pipedrive.com",
+        "description": "Activity-based sales CRM built for deal tracking and revenue pipelines.",
+        "auth_methods": ["OAuth 2.0", "Personal API Token"],
+        "auth_primary": "OAuth2 / API Key",
+        "access_model": "Self-Serve (14-day Free Trial & Developer Sandbox)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant personal API token generation in personal preferences or OAuth2 marketplace app."
+        },
+        "evidence": {
+            "docs_url": "https://developers.pipedrive.com/docs/api/v1",
+            "verification_notes": "Instant API token in user settings; Developer sandbox allows public app testing."
+        }
+    },
+    {
+        "id": 4,
+        "name": "Attio",
+        "category": "CRM and Sales",
+        "website": "https://attio.com",
+        "description": "Next-generation data-driven CRM for modern tech startups and teams.",
+        "auth_methods": ["Bearer API Key", "OAuth 2.0"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Tier with instant API keys)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "Medium (50+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free tier provides direct API key generation in workspace settings."
+        },
+        "evidence": {
+            "docs_url": "https://developers.attio.com/reference",
+            "verification_notes": "Well-documented REST v2 API with OpenAPI spec and standard Bearer token authorization."
+        }
+    },
+    {
+        "id": 5,
+        "name": "Twenty",
+        "category": "CRM and Sales",
+        "website": "https://twenty.com",
+        "description": "Modern open-source CRM alternative to Salesforce.",
+        "auth_methods": ["Bearer API Key", "OAuth 2.0"],
+        "auth_primary": "API Key",
+        "access_model": "Self-Serve (Free Open-Source / Free Cloud Tier)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "GraphQL", "Webhooks"],
+            "breadth": "Medium (60+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Self-hosted instances or free cloud workspace offer full API access."
+        },
+        "evidence": {
+            "docs_url": "https://docs.twenty.com",
+            "verification_notes": "Open-source codebase with native REST and GraphQL APIs; self-serve API keys in settings."
+        }
+    },
+    {
+        "id": 6,
+        "name": "Podio",
+        "category": "CRM and Sales",
+        "website": "https://podio.com",
+        "description": "Customizable cloud workspace and work management CRM (by Citrix).",
+        "auth_methods": ["OAuth 2.0 (Server-side & App Authentication Flow)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Tier up to 5 employees)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Older OAuth2 architecture requiring app-level authentication tokens and custom refresh handling."
+        },
+        "evidence": {
+            "docs_url": "https://podio.com/developer",
+            "verification_notes": "Full developer portal available; supports App authentication (client credentials on specific workspaces)."
+        }
+    },
+    {
+        "id": 7,
+        "name": "Zoho CRM",
+        "category": "CRM and Sales",
+        "website": "https://zoho.com/crm",
+        "description": "Comprehensive omnichannel cloud CRM for sales force automation.",
+        "auth_methods": ["OAuth 2.0 (Multi-DC regional token endpoints)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Developer Edition / Sandbox)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Multi-datacenter complexity (.com, .eu, .in, .com.au, .com.cn require region-specific auth and API endpoints)."
+        },
+        "evidence": {
+            "docs_url": "https://www.zoho.com/crm/developer/docs/api/v3",
+            "verification_notes": "OAuth2 required via Zoho Accounts; free developer edition available via Zoho Developer console."
+        }
+    },
+    {
+        "id": 8,
+        "name": "Close",
+        "category": "CRM and Sales",
+        "website": "https://close.com",
+        "description": "Inside sales CRM featuring built-in calling, SMS, and email automation.",
+        "auth_methods": ["HTTP Basic Auth (API Key as username, password blank)", "OAuth 2.0"],
+        "auth_primary": "API Key / Basic Auth",
+        "access_model": "Self-Serve (14-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Composio Native / Community MCP",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API keys generate instantly in Settings -> Integrations."
+        },
+        "evidence": {
+            "docs_url": "https://developer.close.com",
+            "verification_notes": "Clean REST v1 API using Basic Auth with API key; comprehensive webhooks and OpenAPI spec."
+        }
+    },
+    {
+        "id": 9,
+        "name": "Copper",
+        "category": "CRM and Sales",
+        "website": "https://copper.com",
+        "description": "Google Workspace-recommended CRM deeply integrated with Gmail and Calendar.",
+        "auth_methods": ["API Key + User Email Headers (X-PW-AccessToken, X-PW-UserEmail)"],
+        "auth_primary": "API Key + Header",
+        "access_model": "Self-Serve (14-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "Medium (50+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Requires custom HTTP headers (X-PW-AccessToken, X-PW-UserEmail, X-PW-Application: developer_api)."
+        },
+        "evidence": {
+            "docs_url": "https://developer.copper.com",
+            "verification_notes": "API keys generated by workspace admin under Settings -> Integrations -> API Keys."
+        }
+    },
+    {
+        "id": 10,
+        "name": "DealCloud",
+        "category": "CRM and Sales",
+        "website": "https://api.docs.dealcloud.com",
+        "description": "Enterprise deal management, CRM, and intelligence platform for capital markets (by Intapp).",
+        "auth_methods": ["OAuth 2.0 Client Credentials (POST /api/rest/v1/oauth/token with apiKey & clientId)"],
+        "auth_primary": "OAuth2 Client Credentials",
+        "access_model": "Gated (Enterprise Subscription & Admin Capability Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST v4 (Data/Schema)", "REST v1 (Management)"],
+            "breadth": "High (Enterprise Financial Surface)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "No public developer sandbox. Requires enterprise DealCloud tenant and admin permissioning in User Group Capabilities."
+        },
+        "evidence": {
+            "docs_url": "https://api.docs.dealcloud.com",
+            "verification_notes": "Client credentials exchange yields 900-second bearer token; strictly gated behind enterprise contracts."
+        }
+    },
+
+    # Category 2: Support and Helpdesk (11-20)
+    {
+        "id": 11,
+        "name": "Zendesk",
+        "category": "Support and Helpdesk",
+        "website": "https://zendesk.com",
+        "description": "Omnichannel customer service, ticketing, and customer engagement platform.",
+        "auth_methods": ["OAuth 2.0", "API Token (Basic Auth user@domain.com/token:API_KEY)", "Bearer Token"],
+        "auth_primary": "OAuth2 / API Key",
+        "access_model": "Self-Serve (Free Trial & Free Developer Sponsor Portal)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Developer accounts and trial orgs provide instant API token and OAuth app creation."
+        },
+        "evidence": {
+            "docs_url": "https://developer.zendesk.com/api-reference",
+            "verification_notes": "Extensive REST v2 API with OpenAPI specs; supports both simple API tokens and full multi-tenant OAuth2."
+        }
+    },
+    {
+        "id": 12,
+        "name": "Intercom",
+        "category": "Support and Helpdesk",
+        "website": "https://intercom.com",
+        "description": "AI-first customer service platform featuring live chat, tickets, and automated bots.",
+        "auth_methods": ["OAuth 2.0", "Internal Workspace Access Tokens (Bearer)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Developer Workspace via Developer Hub)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Intercom Developer Hub lets any developer spin up a free development workspace."
+        },
+        "evidence": {
+            "docs_url": "https://developers.intercom.com/docs/references/rest-api/api.intercom.io",
+            "verification_notes": "Modern REST API (v2.11) with fine-grained OAuth scopes and workspace personal access tokens."
+        }
+    },
+    {
+        "id": 13,
+        "name": "Freshdesk",
+        "category": "Support and Helpdesk",
+        "website": "https://freshdesk.com",
+        "description": "Cloud-based customer support software and ticketing system (by Freshworks).",
+        "auth_methods": ["HTTP Basic Auth (API Key as username, 'X' as password)", "OAuth 2.0"],
+        "auth_primary": "API Key / Basic Auth",
+        "access_model": "Self-Serve (Free Tier up to 10 agents & Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key generation in user profile settings on free plan."
+        },
+        "evidence": {
+            "docs_url": "https://developers.freshdesk.com/api",
+            "verification_notes": "REST API v2; authenticates via API key in Profile Settings."
+        }
+    },
+    {
+        "id": 14,
+        "name": "Front",
+        "category": "Support and Helpdesk",
+        "website": "https://front.com",
+        "description": "Customer communication hub consolidating emails, SMS, and messaging in shared inboxes.",
+        "auth_methods": ["OAuth 2.0", "API Tokens (Bearer)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Trial available)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (90+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Requires Company Admin role to generate workspace API tokens."
+        },
+        "evidence": {
+            "docs_url": "https://dev.frontapp.com/reference",
+            "verification_notes": "Well-documented REST API with OpenAPI spec and standard Bearer token authorization."
+        }
+    },
+    {
+        "id": 15,
+        "name": "Pylon",
+        "category": "Support and Helpdesk",
+        "website": "https://usepylon.com",
+        "description": "B2B customer support platform embedded inside Slack, Microsoft Teams, and email.",
+        "auth_methods": ["Bearer API Token (Generated in Dashboard Settings)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Gated (B2B SaaS / Sales Demo Required for Workspace)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "Medium (40+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Requires active paid B2B Pylon workspace and admin privileges to create API tokens."
+        },
+        "evidence": {
+            "docs_url": "https://docs.usepylon.com/reference/getting-started-1",
+            "verification_notes": "Regional REST endpoints (US/EU) using Bearer auth; no public self-serve signup without company verification."
+        }
+    },
+    {
+        "id": 16,
+        "name": "LiveAgent",
+        "category": "Support and Helpdesk",
+        "website": "https://liveagent.com",
+        "description": "Helpdesk and live chat software with ticketing and call center features.",
+        "auth_methods": ["API Key (apikey header or query param)", "OAuth 2.0"],
+        "auth_primary": "API Key",
+        "access_model": "Self-Serve (14-day Free Trial & Free Tier)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key creation in Configuration -> System -> API."
+        },
+        "evidence": {
+            "docs_url": "https://support.liveagent.com/061754-API-v3-overview",
+            "verification_notes": "REST API v3 with OpenAPI specification and direct key authentication."
+        }
+    },
+    {
+        "id": 17,
+        "name": "Plain",
+        "category": "Support and Helpdesk",
+        "website": "https://plain.com",
+        "description": "Developer-first conversational customer support platform built for B2B engineering teams.",
+        "auth_methods": ["API Key (Bearer token on Machine Users)", "OAuth 2.0"],
+        "auth_primary": "API Key (GraphQL)",
+        "access_model": "Self-Serve (Free Tier with instant onboarding)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["GraphQL (core-api.uk.plain.com/graphql/v1)", "Webhooks"],
+            "breadth": "High (Full GraphQL schema)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free tier provides instant Machine User API key creation with fine-grained permissions."
+        },
+        "evidence": {
+            "docs_url": "https://plain.com/docs/graphql/overview",
+            "verification_notes": "First-class GraphQL API authenticated via Bearer token with granular machine user scopes."
+        }
+    },
+    {
+        "id": 18,
+        "name": "Help Scout",
+        "category": "Support and Helpdesk",
+        "website": "https://helpscout.com",
+        "description": "Simple customer service platform and shared inbox for growing businesses.",
+        "auth_methods": ["OAuth 2.0 (Authorization Code & Client Credentials flows)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (15-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Legacy API keys deprecated; requires creating an OAuth2 App in My App settings."
+        },
+        "evidence": {
+            "docs_url": "https://developer.helpscout.com/mailbox-api",
+            "verification_notes": "Mailbox API 2.0 uses standard OAuth2 Client Credentials or Auth Code flow."
+        }
+    },
+    {
+        "id": 19,
+        "name": "Gorgias",
+        "category": "Support and Helpdesk",
+        "website": "https://gorgias.com",
+        "description": "Ecommerce-focused customer service helpdesk built specifically for Shopify and BigCommerce.",
+        "auth_methods": ["HTTP Basic Auth (Email + API Key)", "OAuth 2.0"],
+        "auth_primary": "Basic Auth / API Key",
+        "access_model": "Self-Serve (7-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (90+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key generation in Settings -> REST API."
+        },
+        "evidence": {
+            "docs_url": "https://developers.gorgias.com/reference",
+            "verification_notes": "REST API authenticates via Basic Auth Base64(email:api_key) or OAuth2."
+        }
+    },
+    {
+        "id": 20,
+        "name": "Gladly",
+        "category": "Support and Helpdesk",
+        "website": "https://gladly.com",
+        "description": "People-centered enterprise customer service platform for retail and hospitality brands.",
+        "auth_methods": ["HTTP Basic Auth (Username + API Token)", "Bearer Token"],
+        "auth_primary": "Basic Auth / Token",
+        "access_model": "Gated (Enterprise Subscription & Sales Onboarding Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (70+ endpoints)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "No public self-serve developer sandbox. Requires active Gladly enterprise contract."
+        },
+        "evidence": {
+            "docs_url": "https://developer.gladly.com",
+            "verification_notes": "Enterprise REST API; tokens provisioned inside customer Gladly organization settings."
+        }
+    },
+
+    # Category 3: Communications and Messaging (21-30)
+    {
+        "id": 21,
+        "name": "Slack",
+        "category": "Communications and Messaging",
+        "website": "https://slack.com",
+        "description": "Enterprise messaging and productivity workspace collaboration platform.",
+        "auth_methods": ["OAuth 2.0", "Bot User OAuth Tokens (xoxb-)", "User Tokens (xoxp-)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Plan & Instant App Portal at api.slack.com)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Web API (HTTP POST/GET)", "Events API", "Socket Mode", "Webhooks"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Official Slack MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant self-serve bot creation and full permissions testing on free tier."
+        },
+        "evidence": {
+            "docs_url": "https://api.slack.com/methods",
+            "verification_notes": "Gold standard developer portal with granular OAuth scopes, Socket Mode, and official MCP server."
+        }
+    },
+    {
+        "id": 22,
+        "name": "Twilio",
+        "category": "Communications and Messaging",
+        "website": "https://twilio.com",
+        "description": "Cloud communication developer platform for SMS, Voice, WhatsApp, and Video.",
+        "auth_methods": ["HTTP Basic Auth (Account SID + Auth Token)", "API Keys + JWT"],
+        "auth_primary": "Basic Auth / API Key",
+        "access_model": "Self-Serve (Free Trial Account with ~$15 test credit)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks", "WebSocket (Media Streams)"],
+            "breadth": "High (400+ endpoints across services)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant trial credentials on signup; standard Basic Auth header."
+        },
+        "evidence": {
+            "docs_url": "https://www.twilio.com/docs/usage/api",
+            "verification_notes": "Instant developer account creation; OpenAPI specs available for all sub-services."
+        }
+    },
+    {
+        "id": 23,
+        "name": "Zoho Cliq",
+        "category": "Communications and Messaging",
+        "website": "https://zoho.com/cliq",
+        "description": "Business communication and team collaboration chat platform.",
+        "auth_methods": ["OAuth 2.0 (Zoho Accounts Multi-DC)", "Bot Tokens"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Tier up to 100 users)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks", "Bots Platform"],
+            "breadth": "High (60+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Multi-region datacenter domain routing requirement."
+        },
+        "evidence": {
+            "docs_url": "https://www.zoho.com/cliq/help/restapi",
+            "verification_notes": "OAuth2 access token passed in Authorization: Zoho-oauthtoken header; free tier available."
+        }
+    },
+    {
+        "id": 24,
+        "name": "Lark (Larksuite)",
+        "category": "Communications and Messaging",
+        "website": "https://open.larksuite.com",
+        "description": "All-in-one collaborative workplace platform combining chat, docs, video, and calendar (by ByteDance).",
+        "auth_methods": ["OAuth 2.0 Client Credentials (app_id + app_secret to obtain tenant_access_token)"],
+        "auth_primary": "OAuth2 Client Credentials",
+        "access_model": "Self-Serve (Free Developer Console & Free Starter Workspace)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2", "Event Subscriptions", "Webhooks"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant developer app creation at open.larksuite.com."
+        },
+        "evidence": {
+            "docs_url": "https://open.larksuite.com/document/server-docs/getting-started/overview",
+            "verification_notes": "Standard short-lived tenant_access_token flow; rich API documentation with interactive API explorer."
+        }
+    },
+    {
+        "id": 25,
+        "name": "Pumble",
+        "category": "Communications and Messaging",
+        "website": "https://pumble.com",
+        "description": "Team messaging and collaboration application for business chats (by Cake.com).",
+        "auth_methods": ["Bearer Bot Token", "Incoming Webhook URLs"],
+        "auth_primary": "Bearer Token / Webhook",
+        "access_model": "Self-Serve (Free Plan available)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "Low to Medium (25+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "API surface is simpler than Slack; mostly bot posting and channel webhooks."
+        },
+        "evidence": {
+            "docs_url": "https://pumble.com/help/integrations/custom-integrations",
+            "verification_notes": "Workspace integrations allow creating custom bots and webhook URLs instantly on free tier."
+        }
+    },
+    {
+        "id": 26,
+        "name": "Discord",
+        "category": "Communications and Messaging",
+        "website": "https://discord.com",
+        "description": "Voice, video, and text communication service for gaming, communities, and developer teams.",
+        "auth_methods": ["Bot Token (Authorization: Bot <token>)", "OAuth 2.0 (Bearer)"],
+        "auth_primary": "Bot Token / OAuth2",
+        "access_model": "Self-Serve (100% Free Developer Portal at discord.com/developers)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v10", "Gateway (WebSockets)", "Interaction Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant bot creation with zero approval for small/medium guild deployments."
+        },
+        "evidence": {
+            "docs_url": "https://discord.com/developers/docs/reference",
+            "verification_notes": "Flawless self-serve developer ecosystem; Bot tokens work immediately upon application registration."
+        }
+    },
+    {
+        "id": 27,
+        "name": "Telegram",
+        "category": "Communications and Messaging",
+        "website": "https://core.telegram.org",
+        "description": "Cloud-based mobile and desktop instant messaging service with open bot ecosystem.",
+        "auth_methods": ["Bot API Token (https://api.telegram.org/bot<token>/<method>)", "MTProto API (api_id + api_hash)"],
+        "auth_primary": "Bot API Token",
+        "access_model": "Self-Serve (100% Free via @BotFather in app)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["HTTP Bot API (REST JSON)", "MTProto (binary)"],
+            "breadth": "High (100+ bot methods)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Fastest bot provisioning in the industry (30 seconds via @BotFather)."
+        },
+        "evidence": {
+            "docs_url": "https://core.telegram.org/bots/api",
+            "verification_notes": "Completely free, instantaneous bot token generation; zero payment or verification gates."
+        }
+    },
+    {
+        "id": 28,
+        "name": "WhatsApp Business",
+        "category": "Communications and Messaging",
+        "website": "https://developers.facebook.com/docs/whatsapp",
+        "description": "Meta cloud messaging API for enterprise communication with WhatsApp users.",
+        "auth_methods": ["Meta System User Access Token / OAuth 2.0 Bearer"],
+        "auth_primary": "OAuth2 / System Token",
+        "access_model": "Semi-Gated (Free Sandbox Developer Mode; Gated for Live Phone Numbers & Billing)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["Cloud API (Graph REST)", "On-Premises API", "Webhooks"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Requires Meta Business Account verification, phone number registration, and payment method for conversation charges."
+        },
+        "evidence": {
+            "docs_url": "https://developers.facebook.com/docs/whatsapp/cloud-api",
+            "verification_notes": "Cloud API offers a test phone number in sandbox; live production requires strict Meta business verification."
+        }
+    },
+    {
+        "id": 29,
+        "name": "Aircall",
+        "category": "Communications and Messaging",
+        "website": "https://aircall.io",
+        "description": "Cloud-based call center software and business phone system for sales and support.",
+        "auth_methods": ["HTTP Basic Auth (API ID as username, API Token as password)", "OAuth 2.0"],
+        "auth_primary": "API Key / Basic Auth",
+        "access_model": "Self-Serve (7-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (70+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API keys generated directly in the Dashboard under Integrations -> API Keys."
+        },
+        "evidence": {
+            "docs_url": "https://developer.aircall.io/api-references",
+            "verification_notes": "Clear REST API documentation with standard Basic Auth or Custom Header authorization."
+        }
+    },
+    {
+        "id": 30,
+        "name": "Vonage",
+        "category": "Communications and Messaging",
+        "website": "https://developer.vonage.com",
+        "description": "Cloud communications platform APIs for SMS, Voice, Two-Factor Authentication, and Video (formerly Nexmo).",
+        "auth_methods": ["API Key + API Secret (Basic Auth / query params)", "JWT signed with Private Key"],
+        "auth_primary": "API Key / JWT",
+        "access_model": "Self-Serve (Free Developer Account with trial €2 credit)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks", "WebSocket"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key and secret provided on dashboard registration."
+        },
+        "evidence": {
+            "docs_url": "https://developer.vonage.com/en/api",
+            "verification_notes": "Immediate self-serve onboarding; comprehensive OpenAPI specs for Voice, Messages, and Verify APIs."
+        }
+    },
+
+    # Category 4: Marketing, Ads, Email and Social (31-40)
+    {
+        "id": 31,
+        "name": "Google Ads",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://developers.google.com/google-ads",
+        "description": "Online advertising platform for Google Search, YouTube, and Display Network.",
+        "auth_methods": ["OAuth 2.0 Bearer Token + Developer Token Header (developer-token: <token>)"],
+        "auth_primary": "OAuth2 + Developer Token",
+        "access_model": "Gated (Mandatory Compliance Review for Developer Token)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["Google Ads API (REST & gRPC)"],
+            "breadth": "High (500+ resources)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Test accounts work with test developer token, but querying production ad accounts requires submitting an application for Basic/Standard Access and passing policy review."
+        },
+        "evidence": {
+            "docs_url": "https://developers.google.com/google-ads/api/docs/first-call/overview",
+            "verification_notes": "Requires Google Cloud project, OAuth client credentials, and an approved Developer Token from Google Ads API Compliance."
+        }
+    },
+    {
+        "id": 32,
+        "name": "Meta Ads",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://developers.facebook.com/docs/marketing-apis",
+        "description": "Marketing API for programmatically managing campaigns, ad sets, creatives, and reporting across Facebook and Instagram.",
+        "auth_methods": ["OAuth 2.0 User / System User Access Token (Bearer)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Gated (Business Verification & App Review Required for Production)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["Graph API (REST)", "Webhooks"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Sandbox/development mode is self-serve, but managing real client ad accounts requires Meta Business Verification and App Review approval for ads_management permission."
+        },
+        "evidence": {
+            "docs_url": "https://developers.facebook.com/docs/marketing-apis/get-started",
+            "verification_notes": "Standard Graph API auth; production deployment strictly regulated by Meta App Review."
+        }
+    },
+    {
+        "id": 33,
+        "name": "LinkedIn Ads",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://learn.microsoft.com/linkedin/marketing",
+        "description": "B2B social advertising platform for sponsored content, message ads, and lead generation.",
+        "auth_methods": ["OAuth 2.0 (3-legged authorization code flow)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Gated (Marketing Developer Platform Application Approval Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST (LinkedIn Consumer/Enterprise APIs)"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Developer apps can be created, but accessing advertising endpoints (rw_ads scope) requires an approved LinkedIn Marketing Developer Platform (MDP) application."
+        },
+        "evidence": {
+            "docs_url": "https://learn.microsoft.com/en-us/linkedin/marketing/overview",
+            "verification_notes": "Application form submission required to unlock marketing permissions on LinkedIn Developer Portal."
+        }
+    },
+    {
+        "id": 34,
+        "name": "GoHighLevel",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://highlevel.stoplight.io",
+        "description": "White-label marketing automation and CRM platform built for marketing agencies.",
+        "auth_methods": ["OAuth 2.0 (v2 Marketplace Apps)", "Private Location API Keys (v1 Legacy)"],
+        "auth_primary": "OAuth2 / API Key",
+        "access_model": "Gated (Requires Paid Agency Account or Developer Marketplace Approval)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST v2 (services.leadconnectorhq.com)", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Must be an active paying agency subscriber ($97-$497/mo) or register an approved marketplace developer app."
+        },
+        "evidence": {
+            "docs_url": "https://highlevel.stoplight.io/docs/integrations",
+            "verification_notes": "API v2 uses standard OAuth2 bearer tokens; marketplace developer accounts require vetting."
+        }
+    },
+    {
+        "id": 35,
+        "name": "Mailchimp",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://mailchimp.com/developer",
+        "description": "Email marketing, audience management, and automated campaign marketing platform.",
+        "auth_methods": ["API Key (<key>-<dc> format via Basic Auth or Bearer)", "OAuth 2.0"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Tier up to 500 contacts with instant API keys)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key generation in Account Settings -> Extras -> API Keys."
+        },
+        "evidence": {
+            "docs_url": "https://mailchimp.com/developer/marketing/api",
+            "verification_notes": "API keys include datacenter prefix (e.g. us19); OpenAPI 3.0 specification available."
+        }
+    },
+    {
+        "id": 36,
+        "name": "Klaviyo",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://developers.klaviyo.com",
+        "description": "Intelligent marketing automation platform specialized in ecommerce SMS and email campaigns.",
+        "auth_methods": ["Private API Key (Authorization: Klaviyo-API-Key <key>)", "OAuth 2.0"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Plan with instant API keys)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (Date-versioned APIs)", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API keys generate instantly in Settings -> Account -> API Keys."
+        },
+        "evidence": {
+            "docs_url": "https://developers.klaviyo.com/en/reference/api_overview",
+            "verification_notes": "Clean OpenAPI specifications with date-based API version headers (e.g., revision: 2024-10-15)."
+        }
+    },
+    {
+        "id": 37,
+        "name": "systeme.io",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://systeme.io",
+        "description": "All-in-one marketing platform for sales funnels, email marketing, courses, and affiliate management.",
+        "auth_methods": ["API Key (X-API-KEY header)"],
+        "auth_primary": "API Key",
+        "access_model": "Self-Serve (Free Forever Plan available)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3 (api.systeme.io/api/3)", "Webhooks"],
+            "breadth": "Medium (30+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API keys generated directly in Profile -> Settings -> Public API."
+        },
+        "evidence": {
+            "docs_url": "https://systeme.io",
+            "verification_notes": "Simple REST API authenticated via X-API-KEY header; OpenAPI documentation covers contacts and tags."
+        }
+    },
+    {
+        "id": 38,
+        "name": "Pinterest",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://developers.pinterest.com",
+        "description": "Visual discovery engine for sharing recipes, style inspiration, home ideas, and product pins.",
+        "auth_methods": ["OAuth 2.0 Bearer Token"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Developer account & trial sandbox; App Review for commercial ad accounts)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v5", "Webhooks"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Trial access allows immediate testing with sandbox tokens; production ad access requires business account linking."
+        },
+        "evidence": {
+            "docs_url": "https://developers.pinterest.com/docs/api/v5",
+            "verification_notes": "Modern REST v5 API with full OpenAPI 3.0 specification and interactive API explorer."
+        }
+    },
+    {
+        "id": 39,
+        "name": "Threads (Meta)",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://developers.facebook.com/docs/threads",
+        "description": "Text-based social network built by Instagram/Meta for conversations and public updates.",
+        "auth_methods": ["OAuth 2.0 Bearer Token (Threads Graph API Authorization Code flow)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Meta Developer Account with test user access)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Graph API (REST)", "Webhooks"],
+            "breadth": "Medium (25+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None for personal/test publishing; public third-party publishing requires Meta App Review."
+        },
+        "evidence": {
+            "docs_url": "https://developers.facebook.com/docs/threads",
+            "verification_notes": "Threads API launched in 2024; supports posting text/media, replying, and fetching insights."
+        }
+    },
+    {
+        "id": 40,
+        "name": "SendGrid",
+        "category": "Marketing, Ads, Email and Social",
+        "website": "https://sendgrid.com",
+        "description": "Cloud-based customer communication platform for transactional and marketing email delivery (by Twilio).",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <SG_KEY>)"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (Free Plan with 100 emails/day forever)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks (Event Webhook)"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key generation with granular permissions in Settings -> API Keys."
+        },
+        "evidence": {
+            "docs_url": "https://docs.sendgrid.com/api-reference",
+            "verification_notes": "Flawless developer experience with OpenAPI spec and standard Bearer authorization."
+        }
+    },
+
+    # Category 5: Ecommerce (41-50)
+    {
+        "id": 41,
+        "name": "Shopify",
+        "category": "Ecommerce",
+        "website": "https://shopify.dev",
+        "description": "Leading global commerce platform powering online stores and retail point-of-sale systems.",
+        "auth_methods": ["OAuth 2.0 (Public & Custom Apps)", "Admin API Access Token (X-Shopify-Access-Token)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free Shopify Partners Account with unlimited Dev Stores)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["GraphQL Admin API", "REST Admin API", "Storefront API", "Webhooks"],
+            "breadth": "High (500+ resources)",
+            "mcp_status": "Official Shopify MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Industry benchmark developer ecosystem with free development stores and official MCP server."
+        },
+        "evidence": {
+            "docs_url": "https://shopify.dev/docs/api/admin-graphql",
+            "verification_notes": "Shopify Partners accounts provide free sandbox stores with complete API access."
+        }
+    },
+    {
+        "id": 42,
+        "name": "WooCommerce",
+        "category": "Ecommerce",
+        "website": "https://woocommerce.com",
+        "description": "Open-source, highly customizable ecommerce platform built on WordPress.",
+        "auth_methods": ["HTTP Basic Auth over HTTPS (Consumer Key + Consumer Secret: ck_..., cs_...)"],
+        "auth_primary": "API Key / Basic Auth",
+        "access_model": "Self-Serve (100% Free Open-Source)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Keys generated in WooCommerce -> Settings -> Advanced -> REST API."
+        },
+        "evidence": {
+            "docs_url": "https://woocommerce.github.io/woocommerce-rest-api-docs",
+            "verification_notes": "Straightforward HTTP Basic Auth or query param credentials; full OpenAPI specification."
+        }
+    },
+    {
+        "id": 43,
+        "name": "BigCommerce",
+        "category": "Ecommerce",
+        "website": "https://developer.bigcommerce.com",
+        "description": "Open SaaS ecommerce platform for mid-market and enterprise enterprise merchants.",
+        "auth_methods": ["OAuth 2.0 (X-Auth-Token header + Client ID/Secret)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (Free 15-day Trial & Free Developer Portal)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "GraphQL Storefront API", "Webhooks"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API Accounts created directly in Advanced Settings -> API Accounts."
+        },
+        "evidence": {
+            "docs_url": "https://developer.bigcommerce.com/docs/rest-management",
+            "verification_notes": "Store API tokens authenticate via X-Auth-Token header; OpenAPI specs available."
+        }
+    },
+    {
+        "id": 44,
+        "name": "Salesforce Commerce Cloud",
+        "category": "Ecommerce",
+        "website": "https://developer.salesforce.com/docs/commerce",
+        "description": "Enterprise cloud commerce platform for high-volume B2C and B2B digital storefronts.",
+        "auth_methods": ["OAuth 2.0 via Account Manager (SLAS - Shopper Login and API Access Service)", "OCAPI Client Credentials"],
+        "auth_primary": "OAuth2",
+        "access_model": "Gated (Enterprise Subscription & Account Manager Provisioning Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["B2C Commerce REST APIs (SCAPI)", "Open Commerce API (OCAPI)"],
+            "breadth": "High (250+ endpoints)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "No public self-serve sandbox. Requires enterprise contract and Account Manager administrator client provisioning."
+        },
+        "evidence": {
+            "docs_url": "https://developer.salesforce.com/docs/commerce/commerce-api",
+            "verification_notes": "Strictly enterprise gated; requires Salesforce Commerce Cloud Account Manager credentials."
+        }
+    },
+    {
+        "id": 45,
+        "name": "Magento (Adobe Commerce)",
+        "category": "Ecommerce",
+        "website": "https://developer.adobe.com/commerce",
+        "description": "Enterprise ecommerce platform offering rich digital commerce experiences.",
+        "auth_methods": ["Bearer Token (Admin/Customer token via POST /V1/integration/admin/token)", "OAuth 1.0a"],
+        "auth_primary": "Bearer Token / OAuth1.0a",
+        "access_model": "Self-Serve (Open Source Edition) / Gated (Adobe Commerce Cloud)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v1", "GraphQL"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Open-source instance can be run locally for free; Adobe Cloud edition is enterprise sales."
+        },
+        "evidence": {
+            "docs_url": "https://developer.adobe.com/commerce/webapi/get-started",
+            "verification_notes": "Integration tokens generated in Magento Admin System -> Integrations; standard OpenAPI schema."
+        }
+    },
+    {
+        "id": 46,
+        "name": "Squarespace",
+        "category": "Ecommerce",
+        "website": "https://developers.squarespace.com",
+        "description": "Website building, hosting, and ecommerce platform for creators and small businesses.",
+        "auth_methods": ["API Key (Authorization: Bearer <key>)", "OAuth 2.0"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (14-day Free Trial; API keys require Commerce Plan)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "Medium (50+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Creating API keys in Settings -> Advanced -> Developer API Keys requires a Commerce Advanced subscription or active trial."
+        },
+        "evidence": {
+            "docs_url": "https://developers.squarespace.com/commerce-apis/overview",
+            "verification_notes": "Well-documented Commerce REST APIs covering Orders, Inventory, and Profiles."
+        }
+    },
+    {
+        "id": 47,
+        "name": "Ecwid",
+        "category": "Ecommerce",
+        "website": "https://api-docs.ecwid.com",
+        "description": "E-commerce platform and embeddable shopping cart widget for existing websites (by Lightspeed).",
+        "auth_methods": ["OAuth 2.0 (Bearer token header or token query param)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Developer Account in Ecwid App Market)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free registered developer account provides instant API tokens and test stores."
+        },
+        "evidence": {
+            "docs_url": "https://api-docs.ecwid.com/reference/overview",
+            "verification_notes": "Clear REST API documentation with interactive runner; OAuth2 token passed via token parameter or Bearer header."
+        }
+    },
+    {
+        "id": 48,
+        "name": "Gumroad",
+        "category": "Ecommerce",
+        "website": "https://gumroad.com/api",
+        "description": "E-commerce platform for creators to sell digital products, memberships, and courses directly.",
+        "auth_methods": ["OAuth 2.0", "Personal Access Token (access_token query param or Bearer header)"],
+        "auth_primary": "OAuth2 / Token",
+        "access_model": "Self-Serve (100% Free Account with instant tokens)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2", "Ping / Webhooks"],
+            "breadth": "Medium (30+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant access token generation in Settings -> Advanced -> Applications."
+        },
+        "evidence": {
+            "docs_url": "https://gumroad.com/api",
+            "verification_notes": "Clean REST API; instant personal access token creation for user account."
+        }
+    },
+    {
+        "id": 49,
+        "name": "Amazon Selling Partner",
+        "category": "Ecommerce",
+        "website": "https://developer-docs.amazon.com/sp-api",
+        "description": "Suite of APIs for Amazon sellers and vendors to manage orders, inventory, pricing, and fulfillment.",
+        "auth_methods": ["AWS Signature Version 4 (SigV4)", "Login with Amazon (LWA) OAuth 2.0 Access Token", "AWS IAM Credentials"],
+        "auth_primary": "AWS SigV4 + LWA OAuth2",
+        "access_model": "Gated (Requires Amazon Professional Seller Account $39.99/mo + Developer Profile Vetting)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["RESTful SP-API (OpenAPI / Swagger 2.0)", "SQS Notifications"],
+            "breadth": "High (300+ endpoints across 25+ sub-APIs)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Severely gated. Requires active Amazon Professional Selling Account, AWS IAM setup, and passing Amazon's rigorous Data Protection Policy (DPP) developer review."
+        },
+        "evidence": {
+            "docs_url": "https://developer-docs.amazon.com/sp-api/docs/authorization-overview",
+            "verification_notes": "Requires dual-layer authentication: LWA access token in x-amz-access-token header and AWS SigV4 signed authorization header."
+        }
+    },
+    {
+        "id": 50,
+        "name": "fanbasis",
+        "category": "Ecommerce",
+        "website": "https://fanbasis.com",
+        "description": "Creator monetization platform, subscriptions, and custom checkout experiences (rebranded as Commas).",
+        "auth_methods": ["API Key / Bearer Token", "Webhooks HMAC"],
+        "auth_primary": "API Key",
+        "access_model": "Gated (Creator Merchant Onboarding Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST", "Checkout SDKs (@fanbasis/checkout-sdk)", "Webhooks"],
+            "breadth": "Medium (25+ endpoints)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Requires creator account approval and merchant dashboard access to generate API secrets."
+        },
+        "evidence": {
+            "docs_url": "https://commasdocs.com",
+            "verification_notes": "Official SDK packages (@fanbasis/checkout-sdk); developer portal hosted at commasdocs.com and dev-docs.fanbasis.com."
+        }
+    },
+
+    # Category 6: Data, SEO and Scraping (51-60)
+    {
+        "id": 51,
+        "name": "DataForSEO",
+        "category": "Data, SEO and Scraping",
+        "website": "https://docs.dataforseo.com",
+        "description": "Comprehensive API data provider for SEO, SERP results, backlinks, keywords, and app data.",
+        "auth_methods": ["HTTP Basic Auth (Base64 encoded Login:Password/API Key)"],
+        "auth_primary": "Basic Auth / API Key",
+        "access_model": "Self-Serve (Free Trial with $1 credit upon registration)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant credentials generated on registration; pay-as-you-go."
+        },
+        "evidence": {
+            "docs_url": "https://docs.dataforseo.com/v3",
+            "verification_notes": "Standard HTTP Basic Auth; exhaustive JSON responses covering all major search engines."
+        }
+    },
+    {
+        "id": 52,
+        "name": "SE Ranking",
+        "category": "Data, SEO and Scraping",
+        "website": "https://seranking.com/api",
+        "description": "All-in-one SEO platform for keyword rank tracking, website audit, and competitor analysis.",
+        "auth_methods": ["API Token (Authorization: Token <api_key>)"],
+        "auth_primary": "API Key",
+        "access_model": "Gated (Requires Pro or Business Subscription Tier)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (70+ endpoints)",
+            "mcp_status": "In Development / Available via REST",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "API access is gated behind paid Pro or Business plans; not available on the basic entry tier."
+        },
+        "evidence": {
+            "docs_url": "https://seranking.com/api.html",
+            "verification_notes": "API key passed in Authorization header; requires active paid Pro subscription."
+        }
+    },
+    {
+        "id": 53,
+        "name": "Ahrefs",
+        "category": "Data, SEO and Scraping",
+        "website": "https://ahrefs.com/api",
+        "description": "Industry-leading SEO software suite and web crawler for backlink analysis and keyword research.",
+        "auth_methods": ["Bearer Token (Authorization: Bearer <token>)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Gated (Requires Paid Enterprise Subscription & API Units)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST v3"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "High monetary barrier. API v3 requires Enterprise plan ($999/mo+) and purchase of API units."
+        },
+        "evidence": {
+            "docs_url": "https://ahrefs.com/api/documentation",
+            "verification_notes": "OpenAPI spec available; strictly monetized behind enterprise subscriptions."
+        }
+    },
+    {
+        "id": 54,
+        "name": "MrScraper",
+        "category": "Data, SEO and Scraping",
+        "website": "https://docs.mrscraper.com",
+        "description": "AI-powered web scraper for visual point-and-click and prompt-driven structured data extraction.",
+        "auth_methods": ["Bearer API Token (Authorization: Bearer <token>)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Self-Serve (Free Tier / Trial Credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.app.mrscraper.com)", "Node/Python SDKs", "Webhooks"],
+            "breadth": "Medium (30+ endpoints)",
+            "mcp_status": "MCP Compatible",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API tokens generated directly inside user dashboard settings."
+        },
+        "evidence": {
+            "docs_url": "https://docs.mrscraper.com",
+            "verification_notes": "Clear REST API documentation with Node and Python SDKs; native support for LLM/MCP workflows."
+        }
+    },
+    {
+        "id": 55,
+        "name": "Apify",
+        "category": "Data, SEO and Scraping",
+        "website": "https://docs.apify.com",
+        "description": "Cloud platform for web scraping, browser automation, and ecosystem of 1,500+ ready-to-run Actors.",
+        "auth_methods": ["Personal API Token (Authorization: Bearer <token> or token query param)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Self-Serve (Free Plan with $5/month recurring credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2", "OpenAPI", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Official Apify MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant token generation in Apify Console -> Settings -> Integrations."
+        },
+        "evidence": {
+            "docs_url": "https://docs.apify.com/api/v2",
+            "verification_notes": "Official Apify MCP server available; OpenAPI 3.0 specs for all actor execution."
+        }
+    },
+    {
+        "id": 56,
+        "name": "Firecrawl",
+        "category": "Data, SEO and Scraping",
+        "website": "https://firecrawl.dev",
+        "description": "API service that crawls entire websites and converts any URL into clean LLM-ready markdown.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <fc_key>)"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (Free Tier with 500 scrape credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.firecrawl.dev/v1)", "Python/Node SDKs", "Webhooks"],
+            "breadth": "Medium (20+ endpoints: scrape, crawl, map, extract)",
+            "mcp_status": "Official Firecrawl MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Gold standard AI web scraping tool; instant key generation on signup."
+        },
+        "evidence": {
+            "docs_url": "https://docs.firecrawl.dev/api-reference",
+            "verification_notes": "Official MCP server available; simple REST endpoints returning clean Markdown for agents."
+        }
+    },
+    {
+        "id": 57,
+        "name": "Bright Data",
+        "category": "Data, SEO and Scraping",
+        "website": "https://brightdata.com",
+        "description": "Enterprise proxy networks, Scraping Browser (Puppeteer/Playwright CDP), and web data collection APIs.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <key>)", "Proxy Basic Auth"],
+        "auth_primary": "Bearer API Key / Proxy Auth",
+        "access_model": "Self-Serve (Free Trial with test balance)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "WebSocket (CDP Scraping Browser)", "Proxy Protocols"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Official Bright Data MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None for basic Web Scraper API; KYC verification required for residential/mobile proxy networks."
+        },
+        "evidence": {
+            "docs_url": "https://docs.brightdata.com/api-reference",
+            "verification_notes": "Official MCP server launched in 2024; provides Scraping Browser and Web Unlocker APIs."
+        }
+    },
+    {
+        "id": 58,
+        "name": "Sherlock",
+        "category": "Data, SEO and Scraping",
+        "website": "https://github.com/sherlock-project/sherlock",
+        "description": "Open-source OSINT Python tool to find usernames across 400+ social media websites.",
+        "auth_methods": ["None (Open-source CLI / No API Keys)"],
+        "auth_primary": "None (CLI)",
+        "access_model": "Self-Serve (100% Free Open Source GPL-3.0)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Command Line Interface (CLI)", "Docker / Python Library"],
+            "breadth": "Low (Single CLI function with flags)",
+            "mcp_status": "Local MCP Wrapper",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "CLI / Script Wrapper",
+            "blocker": "No hosted public REST API. Must be packaged and run inside a containerized local MCP execution server."
+        },
+        "evidence": {
+            "docs_url": "https://github.com/sherlock-project/sherlock",
+            "verification_notes": "Open-source command-line tool written in Python; requires local process execution."
+        }
+    },
+    {
+        "id": 59,
+        "name": "Waterfall.io",
+        "category": "Data, SEO and Scraping",
+        "website": "https://waterfall.io",
+        "description": "B2B data enrichment and waterfall aggregation API routing queries across 30+ contact/company vendors.",
+        "auth_methods": ["API Key (x-api-key header)"],
+        "auth_primary": "API Key",
+        "access_model": "Gated (Enterprise GTM Sales / Access Request Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST (api.waterfall.io)", "Webhooks"],
+            "breadth": "Medium (30+ endpoints)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Enterprise sales gate. Requires booking a call or requesting API access directly to obtain active API keys."
+        },
+        "evidence": {
+            "docs_url": "https://docs.waterfall.io",
+            "verification_notes": "Mintlify-hosted REST documentation; authenticates via x-api-key header; sales approval required."
+        }
+    },
+    {
+        "id": 60,
+        "name": "Clay",
+        "category": "Data, SEO and Scraping",
+        "website": "https://clay.com",
+        "description": "AI-powered data enrichment and automated outbound prospecting platform combining 50+ data sources.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <key>)", "Webhook Ingest URLs"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (14-day Free Trial with 100 credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.clay.com)", "Webhooks"],
+            "breadth": "Medium (40+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free trial provides immediate access to webhook ingest and personal API keys in settings."
+        },
+        "evidence": {
+            "docs_url": "https://clay.com",
+            "verification_notes": "API and Webhook integrations accessible via workspace settings on trial accounts."
+        }
+    },
+
+    # Category 7: Developer, Infra and Data platforms (61-70)
+    {
+        "id": 61,
+        "name": "GitHub",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://docs.github.com/rest",
+        "description": "Cloud hosting platform for software development, Git version control, and collaborative coding.",
+        "auth_methods": ["Personal Access Token (ghp_... classic or github_pat_... fine-grained)", "OAuth 2.0", "GitHub App Installation Tokens"],
+        "auth_primary": "Token / OAuth2",
+        "access_model": "Self-Serve (100% Free Developer Account)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "GraphQL v4", "Webhooks"],
+            "breadth": "High (600+ endpoints)",
+            "mcp_status": "Official GitHub MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. The industry standard developer API with official GitHub MCP server."
+        },
+        "evidence": {
+            "docs_url": "https://docs.github.com/en/rest",
+            "verification_notes": "Fine-grained PATs offer precise resource scoping; official MCP server maintained by GitHub."
+        }
+    },
+    {
+        "id": 62,
+        "name": "Vercel",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://vercel.com/docs/rest-api",
+        "description": "Frontend cloud platform providing developer tools and cloud infrastructure to build and deploy web applications.",
+        "auth_methods": ["Bearer Access Token (Authorization: Bearer <token>)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Hobby Tier)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v9", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Official Vercel MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant token creation in Account Settings -> Tokens."
+        },
+        "evidence": {
+            "docs_url": "https://vercel.com/docs/rest-api",
+            "verification_notes": "Official Vercel MCP server available; OpenAPI 3.0 specification for all deployment endpoints."
+        }
+    },
+    {
+        "id": 63,
+        "name": "Netlify",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://docs.netlify.com/api",
+        "description": "Cloud platform for modern web projects, automated deployments, serverless functions, and CDN.",
+        "auth_methods": ["Personal Access Token (Authorization: Bearer <token>)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Starter Plan)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v1 (api.netlify.com)", "Webhooks"],
+            "breadth": "High (100+ endpoints)",
+            "mcp_status": "Official Netlify MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant personal access token generation in User Settings -> Applications."
+        },
+        "evidence": {
+            "docs_url": "https://docs.netlify.com/api/get-started",
+            "verification_notes": "Official Netlify MCP server available; comprehensive OpenAPI 2.0/3.0 specifications."
+        }
+    },
+    {
+        "id": 64,
+        "name": "Cloudflare",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://developers.cloudflare.com/api",
+        "description": "Global cloud network platform providing security, performance, DNS, and serverless compute (Workers).",
+        "auth_methods": ["API Token (Bearer Authorization: Bearer <token>)", "Global API Key (X-Auth-Key + X-Auth-Email)"],
+        "auth_primary": "API Token (Bearer)",
+        "access_model": "Self-Serve (Free Tier for DNS, CDN, and Workers)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v4", "GraphQL Analytics API"],
+            "breadth": "High (1,000+ endpoints)",
+            "mcp_status": "Official Cloudflare MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Scoped API tokens generate instantly in My Profile -> API Tokens."
+        },
+        "evidence": {
+            "docs_url": "https://developers.cloudflare.com/api",
+            "verification_notes": "Official Cloudflare MCP server; granular role-based tokens for precise domain/worker permissions."
+        }
+    },
+    {
+        "id": 65,
+        "name": "Supabase",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://supabase.com/docs",
+        "description": "Open-source Firebase alternative featuring managed PostgreSQL, Authentication, Storage, and Edge Functions.",
+        "auth_methods": ["API Keys (apikey and Authorization: Bearer <anon/service_role_key>)", "Personal Access Token for Management API"],
+        "auth_primary": "API Key / Bearer Token",
+        "access_model": "Self-Serve (Free Plan with 2 active projects)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["PostgREST (HTTP)", "GraphQL", "Management REST API", "Realtime WebSockets"],
+            "breadth": "High (Full Postgres surface + Management)",
+            "mcp_status": "Official Supabase MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant project creation and key provisioning in Project Settings -> API."
+        },
+        "evidence": {
+            "docs_url": "https://supabase.com/docs/guides/api",
+            "verification_notes": "Official Supabase MCP server; auto-generates PostgREST endpoints and OpenAPI specs from Postgres schemas."
+        }
+    },
+    {
+        "id": 66,
+        "name": "Neo4j",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://neo4j.com/docs/api",
+        "description": "Graph database management system designed for optimizing connected data queries and network graphs.",
+        "auth_methods": ["HTTP Basic Auth (neo4j:password)", "Bearer Token via Aura Management API"],
+        "auth_primary": "Basic Auth / Bearer Token",
+        "access_model": "Self-Serve (Free AuraDB Cloud Instance)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Bolt Protocol (binary)", "Cypher HTTP Query API", "Aura REST API"],
+            "breadth": "High (Full Graph Query Language + Management)",
+            "mcp_status": "Official Neo4j MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free cloud graph database provisioned instantly in Neo4j Aura console."
+        },
+        "evidence": {
+            "docs_url": "https://neo4j.com/docs/http-api/current",
+            "verification_notes": "Official Neo4j MCP server available; Cypher HTTP query endpoint accepts standard JSON."
+        }
+    },
+    {
+        "id": 67,
+        "name": "Snowflake",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://docs.snowflake.com",
+        "description": "Cloud data platform offering scalable data warehousing, data lakes, and SQL analytics.",
+        "auth_methods": ["Key Pair Authentication (JWT Bearer)", "OAuth 2.0", "Basic Username/Password"],
+        "auth_primary": "Key Pair / JWT / OAuth2",
+        "access_model": "Self-Serve (30-day Free Trial with $400 credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Snowflake SQL REST API v2", "Python Connector", "Snowpark API"],
+            "breadth": "High (Full SQL execution surface)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Key pair authentication requires generating an RSA 2048-bit key pair and assigning public key to user."
+        },
+        "evidence": {
+            "docs_url": "https://docs.snowflake.com/en/developer-guide/sql-api/index",
+            "verification_notes": "Snowflake SQL REST API v2 allows querying database tables via standard HTTPS POST with JWT bearer auth."
+        }
+    },
+    {
+        "id": 68,
+        "name": "MongoDB Atlas",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://mongodb.com/docs/atlas/api",
+        "description": "Multi-cloud developer data platform and fully managed NoSQL document database service.",
+        "auth_methods": ["HTTP Digest Auth (Public/Private Key Pair for Admin API)", "API Key (Data API)"],
+        "auth_primary": "Digest Auth / API Key",
+        "access_model": "Self-Serve (Free Forever M0 Shared Cluster)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Atlas Administration REST API", "Atlas Data API (HTTPS)", "Native Wire Protocol"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Official MongoDB MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free cluster and API keys created directly in Atlas organization Access Manager."
+        },
+        "evidence": {
+            "docs_url": "https://www.mongodb.com/docs/atlas/reference/api-resources-spec",
+            "verification_notes": "Official MongoDB MCP server available; OpenAPI 3.0 specification for Atlas Admin API."
+        }
+    },
+    {
+        "id": 69,
+        "name": "Datadog",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://docs.datadoghq.com/api",
+        "description": "Observability, cloud monitoring, infrastructure analytics, and security platform.",
+        "auth_methods": ["Dual Key Headers (DD-API-KEY + DD-APPLICATION-KEY)"],
+        "auth_primary": "API Key + App Key",
+        "access_model": "Self-Serve (14-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v1 & v2"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Requires passing two headers: DD-API-KEY and DD-APPLICATION-KEY, plus region-specific domain (datadoghq.com vs datadoghq.eu)."
+        },
+        "evidence": {
+            "docs_url": "https://docs.datadoghq.com/api/latest",
+            "verification_notes": "OpenAPI specifications for v1 and v2 APIs; instant key creation in Organization Settings -> API Keys."
+        }
+    },
+    {
+        "id": 70,
+        "name": "Sentry",
+        "category": "Developer, Infra and Data platforms",
+        "website": "https://docs.sentry.io/api",
+        "description": "Application monitoring and error tracking platform for developers to diagnose crashes and performance bottlenecks.",
+        "auth_methods": ["Bearer Auth Token (Authorization: Bearer <token>)", "DSN (SDK Ingestion)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Self-Serve (Free Developer Tier with 5,000 errors/mo)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Official Sentry MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Scoped user auth tokens generate instantly in Settings -> Account -> API -> User Auth Tokens."
+        },
+        "evidence": {
+            "docs_url": "https://docs.sentry.io/api",
+            "verification_notes": "Official Sentry MCP server available; OpenAPI 3.0 specification covers issues, projects, releases."
+        }
+    },
+
+    # Category 8: Productivity and Project Management (71-80)
+    {
+        "id": 71,
+        "name": "Notion",
+        "category": "Productivity and Project Management",
+        "website": "https://developers.notion.com",
+        "description": "Connected workspace for notes, documentation, project management, and collaborative wikis.",
+        "auth_methods": ["Internal Integration Secret (Authorization: Bearer secret_...)", "Public OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Plan with instant integrations)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.notion.com/v1)"],
+            "breadth": "High (50+ core endpoints covering blocks, pages, databases)",
+            "mcp_status": "Official Notion MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Must explicitly share pages/databases with the internal integration bot in Notion UI."
+        },
+        "evidence": {
+            "docs_url": "https://developers.notion.com/reference/intro",
+            "verification_notes": "Official Notion MCP server available; requires Notion-Version header (e.g., 2022-06-28)."
+        }
+    },
+    {
+        "id": 72,
+        "name": "Airtable",
+        "category": "Productivity and Project Management",
+        "website": "https://airtable.com/developers",
+        "description": "Low-code cloud platform for creating relational databases, spreadsheets, and business applications.",
+        "auth_methods": ["Personal Access Token (Authorization: Bearer pat...)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Plan with instant PAT generation)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v0", "Webhooks"],
+            "breadth": "High (Dynamic REST API per base schema)",
+            "mcp_status": "Official Airtable MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Personal access tokens generate instantly in Airtable Developer Hub with granular scopes."
+        },
+        "evidence": {
+            "docs_url": "https://airtable.com/developers/web/api/introduction",
+            "verification_notes": "Official Airtable MCP server available; dynamic documentation tailored to user's exact bases."
+        }
+    },
+    {
+        "id": 73,
+        "name": "Linear",
+        "category": "Productivity and Project Management",
+        "website": "https://developers.linear.app",
+        "description": "Issue tracking tool and software project management platform built for modern engineering teams.",
+        "auth_methods": ["Personal API Key (Authorization: <lin_api_...> or Bearer)", "OAuth 2.0"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Plan for small teams)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["GraphQL (api.linear.app/graphql)", "Webhooks"],
+            "breadth": "High (Complete GraphQL schema)",
+            "mcp_status": "Official Linear MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Gold standard developer tool; instant API key generation in Settings -> Account -> Security."
+        },
+        "evidence": {
+            "docs_url": "https://developers.linear.app/docs/graphql/working-with-the-graphql-api",
+            "verification_notes": "Official Linear MCP server available; best-in-class GraphQL API."
+        }
+    },
+    {
+        "id": 74,
+        "name": "Jira",
+        "category": "Productivity and Project Management",
+        "website": "https://developer.atlassian.com",
+        "description": "Agile project tracking, issue management, and software release planning platform (by Atlassian).",
+        "auth_methods": ["HTTP Basic Auth (User Email + API Token: Base64(email:token))", "OAuth 2.0 (3LO)"],
+        "auth_primary": "Basic Auth / OAuth2",
+        "access_model": "Self-Serve (Free Plan up to 10 users with instant API tokens)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks"],
+            "breadth": "High (300+ endpoints)",
+            "mcp_status": "Official Atlassian MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API tokens generate instantly at id.atlassian.com/manage-profile/security/api-tokens."
+        },
+        "evidence": {
+            "docs_url": "https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro",
+            "verification_notes": "Official Atlassian MCP server available; OpenAPI 3.0 specification covers all Jira Cloud resources."
+        }
+    },
+    {
+        "id": 75,
+        "name": "Asana",
+        "category": "Productivity and Project Management",
+        "website": "https://developers.asana.com",
+        "description": "Work and project management software helping teams orchestrate tasks, workflows, and goals.",
+        "auth_methods": ["Personal Access Token (Authorization: Bearer <token>)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Plan up to 15 users)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (app.asana.com/api/1.0)", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Official Asana MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Personal access tokens generate immediately inside Asana Developer Console."
+        },
+        "evidence": {
+            "docs_url": "https://developers.asana.com/reference/rest-api-reference",
+            "verification_notes": "Official Asana MCP server available; full OpenAPI 3.0 specification."
+        }
+    },
+    {
+        "id": 76,
+        "name": "Monday.com",
+        "category": "Productivity and Project Management",
+        "website": "https://developer.monday.com",
+        "description": "Cloud Work OS platform for custom workflow automation, boards, and project management.",
+        "auth_methods": ["Personal API Token (Authorization: <token>)", "OAuth 2.0"],
+        "auth_primary": "API Token / OAuth2",
+        "access_model": "Self-Serve (14-day Free Trial & Free Plan up to 2 seats)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["GraphQL (api.monday.com/v2)", "Webhooks"],
+            "breadth": "High (Full GraphQL schema)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API tokens generate instantly in Administration -> Developers section."
+        },
+        "evidence": {
+            "docs_url": "https://developer.monday.com/api-reference/docs",
+            "verification_notes": "Modern GraphQL API (v2024+); authenticates via personal API token in Authorization header."
+        }
+    },
+    {
+        "id": 77,
+        "name": "ClickUp",
+        "category": "Productivity and Project Management",
+        "website": "https://clickup.com/api",
+        "description": "All-in-one productivity platform for tasks, docs, chat, goals, and project tracking.",
+        "auth_methods": ["Personal API Token (Authorization: pk_...)", "OAuth 2.0"],
+        "auth_primary": "API Token / OAuth2",
+        "access_model": "Self-Serve (Free Forever Plan with instant tokens)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2 (api.clickup.com/api/v2)", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Personal API token generates immediately in User Settings -> Apps."
+        },
+        "evidence": {
+            "docs_url": "https://clickup.com/api",
+            "verification_notes": "Official / Community MCP servers available; OpenAPI spec covers full hierarchy (Spaces, Folders, Lists, Tasks)."
+        }
+    },
+    {
+        "id": 78,
+        "name": "Coda",
+        "category": "Productivity and Project Management",
+        "website": "https://coda.io/developers",
+        "description": "All-in-one collaborative doc and canvas with interactive tables, buttons, and formula automation.",
+        "auth_methods": ["API Token (Authorization: Bearer <token>)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (Free Tier with instant API tokens)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v1 (coda.io/apis/v1)", "Webhooks", "Packs Platform"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Official Coda MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API tokens generate instantly in Account Settings -> API Settings."
+        },
+        "evidence": {
+            "docs_url": "https://coda.io/developers/apis/v1",
+            "verification_notes": "Official Coda MCP server available; OpenAPI 3.0 specification covers docs, tables, rows, formulas."
+        }
+    },
+    {
+        "id": 79,
+        "name": "Smartsheet",
+        "category": "Productivity and Project Management",
+        "website": "https://smartsheet.com/developers",
+        "description": "Enterprise work execution platform offering spreadsheet-style collaborative work and project management.",
+        "auth_methods": ["Bearer Access Token (Authorization: Bearer <token>)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Self-Serve (30-day Free Trial)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2.0", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Generated in Personal Settings -> API Access -> Generate new access token."
+        },
+        "evidence": {
+            "docs_url": "https://smartsheet.redoc.ly",
+            "verification_notes": "Redocly OpenAPI specification covers sheets, reports, workflows, and automated webhooks."
+        }
+    },
+    {
+        "id": 80,
+        "name": "Harvest",
+        "category": "Productivity and Project Management",
+        "website": "https://help.getharvest.com/api-v2",
+        "description": "Cloud-based time tracking, expense tracking, and client invoicing software for agencies and consultancies.",
+        "auth_methods": ["Personal Access Token (Authorization: Bearer <token> + Harvest-Account-Id header)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token + Account Header",
+        "access_model": "Self-Serve (30-day Free Trial & Free Plan for 1 seat)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2", "Webhooks"],
+            "breadth": "Medium (50+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Must pass both Authorization: Bearer <token> and Harvest-Account-Id: <id> headers."
+        },
+        "evidence": {
+            "docs_url": "https://help.getharvest.com/api-v2",
+            "verification_notes": "Personal access tokens generated directly inside Harvest developer portal (id.getharvest.com/developers)."
+        }
+    },
+
+    # Category 9: Finance and Fintech (81-90)
+    {
+        "id": 81,
+        "name": "Stripe",
+        "category": "Finance and Fintech",
+        "website": "https://stripe.com/docs/api",
+        "description": "Financial infrastructure and developer payment processing platform powering internet commerce.",
+        "auth_methods": ["Secret API Key (Authorization: Bearer sk_test_... or sk_live_...)", "Restricted API Keys (rk_...)"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (100% Free Sandbox with instant test keys)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (500+ endpoints)",
+            "mcp_status": "Official Stripe MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. The gold standard of developer APIs; test mode keys available instantly on email signup."
+        },
+        "evidence": {
+            "docs_url": "https://stripe.com/docs/api",
+            "verification_notes": "Official Stripe MCP server available; OpenAPI 3.0 specification covers all payment and banking rails."
+        }
+    },
+    {
+        "id": 82,
+        "name": "Plaid",
+        "category": "Finance and Fintech",
+        "website": "https://plaid.com/docs",
+        "description": "Fintech API platform connecting consumer bank accounts to financial applications and fintech tools.",
+        "auth_methods": ["Client ID + Secret Headers (PLAID-CLIENT-ID and PLAID-SECRET)", "Link Token Exchange"],
+        "auth_primary": "API Key Headers",
+        "access_model": "Self-Serve (Free Sandbox with instant test credentials; Production requires Business Verification)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (80+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Sandbox is instant self-serve with mock bank credentials; production access requires compliance verification."
+        },
+        "evidence": {
+            "docs_url": "https://plaid.com/docs/api",
+            "verification_notes": "Instant test keys in Dashboard -> Keys; full OpenAPI 3.0 specification for transactions, auth, balance."
+        }
+    },
+    {
+        "id": 83,
+        "name": "Binance",
+        "category": "Finance and Fintech",
+        "website": "https://binance-docs.github.io",
+        "description": "Global cryptocurrency exchange platform for spot trading, futures, and digital asset management.",
+        "auth_methods": ["HMAC SHA256 Signature with API Key & Secret (X-MBX-APIKEY header + signature parameter)", "RSA / Ed25519 Key Pairs"],
+        "auth_primary": "HMAC-SHA256 / API Key",
+        "access_model": "Self-Serve (Free Testnet at testnet.binance.vision with zero KYC; Live requires Identity KYC)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "WebSocket Streams"],
+            "breadth": "High (200+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "Requires cryptographic request signing (HMAC-SHA256 signature calculated with timestamp and query string)."
+        },
+        "evidence": {
+            "docs_url": "https://binance-docs.github.io/apidocs/spot/en",
+            "verification_notes": "Testnet requires no identity verification; instant API keys generated with GitHub login."
+        }
+    },
+    {
+        "id": 84,
+        "name": "Paygent Connect",
+        "category": "Finance and Fintech",
+        "website": "https://developer.nmi.com",
+        "description": "White-label payment gateway and transaction processing engine (powered by NMI).",
+        "auth_methods": ["Security Key (security_key parameter in POST/GET)", "HTTP Basic Auth"],
+        "auth_primary": "API Key (Security Key)",
+        "access_model": "Gated (Merchant Boarding & Underwriting Approval Required)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST API", "Three-Step Redirect API", "Direct Post"],
+            "breadth": "Medium (50+ endpoints)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "No public self-serve developer sandbox without merchant boarding and underwriting review."
+        },
+        "evidence": {
+            "docs_url": "https://developer.nmi.com",
+            "verification_notes": "NMI gateway requires an active merchant affiliate or processing account to obtain a security key."
+        }
+    },
+    {
+        "id": 85,
+        "name": "iPayX",
+        "category": "Finance and Fintech",
+        "website": "https://ipayx.ai/docs",
+        "description": "AI-native FX audit engine and mid-market foreign exchange verification protocol.",
+        "auth_methods": ["Bearer Token", "Direct MCP Server Endpoint (https://mcp.ipayx.ai/mcp)"],
+        "auth_primary": "MCP Native / Bearer Token",
+        "access_model": "Self-Serve (Open MCP endpoint & API access)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Model Context Protocol (Streamable HTTP)", "REST"],
+            "breadth": "Low to Medium (FX audit tools and verification)",
+            "mcp_status": "Native MCP Server (https://mcp.ipayx.ai/mcp)",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Designed natively as an MCP server for AI clients."
+        },
+        "evidence": {
+            "docs_url": "https://ipayx.ai/docs",
+            "verification_notes": "Native MCP configuration exposes check_fx_mid_market_rate tools directly to agents."
+        }
+    },
+    {
+        "id": 86,
+        "name": "QuickBooks",
+        "category": "Finance and Fintech",
+        "website": "https://developer.intuit.com",
+        "description": "Small business cloud accounting, invoicing, payroll, and bookkeeping software (by Intuit).",
+        "auth_methods": ["OAuth 2.0 (Authorization Code flow with Refresh Token)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Intuit Developer Account with automatic sandbox company)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v3", "Webhooks"],
+            "breadth": "High (120+ endpoints)",
+            "mcp_status": "Official / Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None for sandbox. Intuit developer portal auto-provisions sandbox company and test OAuth credentials."
+        },
+        "evidence": {
+            "docs_url": "https://developer.intuit.com/app/developer/qbo/docs/api/accounting/most-common/account",
+            "verification_notes": "Standard OAuth2 flow; requires realmId (company ID) parameter in API URLs."
+        }
+    },
+    {
+        "id": 87,
+        "name": "Xero",
+        "category": "Finance and Fintech",
+        "website": "https://developer.xero.com",
+        "description": "Cloud-based accounting platform for small businesses, accountants, and bookkeepers.",
+        "auth_methods": ["OAuth 2.0 (Authorization Code with PKCE or client secret)"],
+        "auth_primary": "OAuth2",
+        "access_model": "Self-Serve (Free Developer Account & 30-day Demo Company)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST", "Webhooks"],
+            "breadth": "High (150+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free developer account allows creating OAuth2 apps and testing against demo company."
+        },
+        "evidence": {
+            "docs_url": "https://developer.xero.com/documentation/api/accounting/overview",
+            "verification_notes": "Requires passing xero-tenant-id header obtained from /connections endpoint after OAuth2 token exchange."
+        }
+    },
+    {
+        "id": 88,
+        "name": "Brex",
+        "category": "Finance and Fintech",
+        "website": "https://developer.brex.com",
+        "description": "Corporate credit cards, spend management, business accounts, and financial software for startups.",
+        "auth_methods": ["User Access Token (Bearer)", "OAuth 2.0"],
+        "auth_primary": "Bearer Token / OAuth2",
+        "access_model": "Gated (Requires Active Brex Corporate Account)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST v1", "Webhooks"],
+            "breadth": "High (80+ endpoints: Payments, Expenses, Budgets, Team)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Requires an approved Brex corporate cash/card account; tokens generated by account admin in developer settings."
+        },
+        "evidence": {
+            "docs_url": "https://developer.brex.com/openapi/overview",
+            "verification_notes": "OpenAPI specifications for payments, expenses, and onboarding; gated behind corporate underwriting."
+        }
+    },
+    {
+        "id": 89,
+        "name": "Ramp",
+        "category": "Finance and Fintech",
+        "website": "https://docs.ramp.com",
+        "description": "Corporate card, expense management, accounts payable, and financial automation platform.",
+        "auth_methods": ["OAuth 2.0 (Client Credentials flow with Client ID & Secret for Bearer token)"],
+        "auth_primary": "OAuth2 Client Credentials",
+        "access_model": "Gated (Requires Active Ramp Customer Account)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST Developer API (api.ramp.com/developer/v1)", "Webhooks"],
+            "breadth": "High (70+ endpoints)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Must be an active Ramp customer or partner to generate API credentials in Company Settings -> Developer."
+        },
+        "evidence": {
+            "docs_url": "https://docs.ramp.com/developer-api/getting-started",
+            "verification_notes": "Client credentials flow exchanges secret for short-lived Bearer token; full OpenAPI spec available."
+        }
+    },
+    {
+        "id": 90,
+        "name": "PitchBook",
+        "category": "Finance and Fintech",
+        "website": "https://pitchbook.com",
+        "description": "Financial data and research platform covering venture capital, private equity, and M&A transactions.",
+        "auth_methods": ["API Key / Custom Client Credentials (Direct Data API)"],
+        "auth_primary": "API Key / Custom",
+        "access_model": "Gated (Strict Enterprise Sales Gate / High Annual Contract Value)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST Direct Data API", "Data Feeds"],
+            "breadth": "High (Capital markets intelligence)",
+            "mcp_status": "None",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Blocked / Outreach Needed",
+            "blocker": "Heavy enterprise paywall. Direct Data API is an enterprise add-on requiring multi-thousand dollar annual contracts."
+        },
+        "evidence": {
+            "docs_url": "https://pitchbook.com/products/direct-data",
+            "verification_notes": "No self-serve developer access or public trial; requires contacting PitchBook enterprise sales."
+        }
+    },
+
+    # Category 10: AI, Research and Media-native (91-100)
+    {
+        "id": 91,
+        "name": "NotebookLM",
+        "category": "AI, Research and Media-native",
+        "website": "https://cloud.google.com/gemini",
+        "description": "AI-powered personalized research assistant and document grounding notebook (by Google).",
+        "auth_methods": ["Google Cloud OAuth 2.0 / Service Account Bearer Token (roles/discoveryengine.notebookLmUser)"],
+        "auth_primary": "OAuth2 / Service Account",
+        "access_model": "Gated (Enterprise Google Cloud License / Discovery Engine API)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST (discoveryengine.googleapis.com / notebook.googleapis.com/v1)"],
+            "breadth": "Medium (Notebook creation, source upload, query, audio overview)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Consumer NotebookLM (notebooklm.google.com) has no public API; enterprise access is Gemini Notebook Enterprise via Google Cloud Discovery Engine with enterprise billing."
+        },
+        "evidence": {
+            "docs_url": "https://cloud.google.com/gemini/docs/enterprise",
+            "verification_notes": "Managed via Google Cloud Discovery Engine API; requires Cloud NotebookLM User IAM role and Google Cloud project."
+        }
+    },
+    {
+        "id": 92,
+        "name": "Otter AI",
+        "category": "AI, Research and Media-native",
+        "website": "https://help.otter.ai",
+        "description": "AI meeting assistant that records audio, writes notes, captures slides, and generates meeting summaries.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <key>)", "OAuth 2.0"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Gated (Restricted to Otter Enterprise Plans)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["REST (api.otter.ai)", "Official Model Context Protocol (mcp.otter.ai)"],
+            "breadth": "Medium (Conversations, Transcripts, Summaries, Channels)",
+            "mcp_status": "Official Otter MCP Server (https://mcp.otter.ai)",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Gated / High Friction",
+            "blocker": "Public API and official MCP server are strictly gated behind Otter Enterprise plans. Requires contacting Otter account manager."
+        },
+        "evidence": {
+            "docs_url": "https://help.otter.ai/hc/en-us/articles/360049449854-Otter-API",
+            "verification_notes": "Official MCP server available at mcp.otter.ai; workspace admin must request provisioning through account manager."
+        }
+    },
+    {
+        "id": 93,
+        "name": "Fathom",
+        "category": "AI, Research and Media-native",
+        "website": "https://fathom.video",
+        "description": "AI meeting recorder that records, transcribes, highlights, and summarizes Zoom, Google Meet, and Teams calls.",
+        "auth_methods": ["API Key (X-Api-Key header)", "OAuth 2.0 (Authorization: Bearer <token>)"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Tier with instant API keys)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.fathom.ai/external/v1)", "TypeScript/Python SDKs", "Webhooks"],
+            "breadth": "Medium (30+ endpoints: meetings, recordings, transcripts, summaries)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. API keys generate instantly in user account settings; full TypeScript and Python SDKs."
+        },
+        "evidence": {
+            "docs_url": "https://docs.fathom.video/reference/getting-started",
+            "verification_notes": "Clean REST API; accepts X-Api-Key header for internal scripts and OAuth 2.0 for public apps."
+        }
+    },
+    {
+        "id": 94,
+        "name": "Consensus",
+        "category": "AI, Research and Media-native",
+        "website": "https://consensus.app",
+        "description": "AI-powered academic search engine utilizing LLMs to synthesize findings across 200M+ research papers.",
+        "auth_methods": ["API Key (x-api-key header)", "OAuth 2.0 Authorization Code with PKCE"],
+        "auth_primary": "API Key / OAuth2",
+        "access_model": "Self-Serve (Free Account with API & MCP Dashboard access)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.consensus.app/v1)", "Official Model Context Protocol Server"],
+            "breadth": "Medium (Paper search, synthesis, claims, full-text)",
+            "mcp_status": "Official Consensus MCP Server",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Free account allows instant API key generation and MCP connection at consensus.app/api-mcp."
+        },
+        "evidence": {
+            "docs_url": "https://consensus.app/api-mcp",
+            "verification_notes": "Official MCP server and REST API; supports both direct API keys and OAuth2 PKCE."
+        }
+    },
+    {
+        "id": 95,
+        "name": "Reducto",
+        "category": "AI, Research and Media-native",
+        "website": "https://reducto.ai",
+        "description": "AI-native document ingestion and parsing API designed to extract complex tables and figures into clean Markdown.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <key>)"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (Free Tier Credits on signup at studio.reducto.ai)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (platform.reducto.ai)", "Python/Node SDKs", "Webhooks"],
+            "breadth": "Medium (Document parsing, chunking, OCR, table extraction)",
+            "mcp_status": "Community MCP Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant API key generation in Reducto Studio; Python SDK picks up REDUCTO_API_KEY environment variable."
+        },
+        "evidence": {
+            "docs_url": "https://docs.reducto.ai",
+            "verification_notes": "Clean REST API with OpenAPI spec and standard Bearer token authorization."
+        }
+    },
+    {
+        "id": 96,
+        "name": "Devin",
+        "category": "AI, Research and Media-native",
+        "website": "https://docs.devin.ai",
+        "description": "Autonomous AI software engineering agent platform built by Cognition AI.",
+        "auth_methods": ["Bearer Service User Key (Authorization: Bearer cog_...)", "Unauthenticated (DeepWiki MCP)"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Gated (Requires Active Paid Devin Plan for Sessions / Playbooks)",
+        "is_self_serve": False,
+        "api_surface": {
+            "protocols": ["Official Model Context Protocol Server (mcp.devin.ai/mcp)", "REST API"],
+            "breadth": "High (Sessions, playbooks, wiki, code execution)",
+            "mcp_status": "Official Devin MCP Server (https://mcp.devin.ai/mcp)",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready with Paid Account / Frictionless MCP",
+            "blocker": "Requires active Devin subscription for full session/playbook tools; public DeepWiki MCP is unauthenticated."
+        },
+        "evidence": {
+            "docs_url": "https://docs.devin.ai/mcp",
+            "verification_notes": "Streamable HTTP MCP server speaks directly to AI clients using cog_ bearer service user tokens."
+        }
+    },
+    {
+        "id": 97,
+        "name": "higgsfield",
+        "category": "AI, Research and Media-native",
+        "website": "https://higgsfield.ai/cli",
+        "description": "Generative AI video and media creation engine with developer CLI and Agent Skills integration.",
+        "auth_methods": ["API Key Pair (Authorization: Key <key_id>:<key_secret>)"],
+        "auth_primary": "API Key Pair",
+        "access_model": "Self-Serve (Developer Access at open.higgsfield.ai)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.higgsfield.ai)", "CLI (github.com/higgsfield-ai/cli)", "Agent Skills Package"],
+            "breadth": "Medium (Video models, generation queue, image synthesis)",
+            "mcp_status": "Agent Skills Package Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Key ID and Secret generated directly in developer console."
+        },
+        "evidence": {
+            "docs_url": "https://open.higgsfield.ai",
+            "verification_notes": "Official CLI and skills package (github.com/higgsfield-ai/skills) allow direct AI agent execution."
+        }
+    },
+    {
+        "id": 98,
+        "name": "Mermaid CLI",
+        "category": "AI, Research and Media-native",
+        "website": "https://github.com/mermaid-js/mermaid-cli",
+        "description": "Command-line interface to render Mermaid diagram text definitions into SVG, PNG, and PDF files.",
+        "auth_methods": ["None (Open-source CLI)"],
+        "auth_primary": "None (CLI)",
+        "access_model": "Self-Serve (100% Free Open Source MIT)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["Command Line Interface (mmdc)", "Node.js / Docker"],
+            "breadth": "Low (Local CLI diagram rendering)",
+            "mcp_status": "Local MCP Wrapper",
+            "spec_available": False
+        },
+        "buildability": {
+            "verdict": "CLI / Script Wrapper",
+            "blocker": "No cloud REST API. Runs locally via npm package (@mermaid-js/mermaid-cli) or Docker container; ideal for local MCP execution tool."
+        },
+        "evidence": {
+            "docs_url": "https://github.com/mermaid-js/mermaid-cli",
+            "verification_notes": "Open-source Node.js package; executed via command line: mmdc -i diagram.mmd -o output.png."
+        }
+    },
+    {
+        "id": 99,
+        "name": "YouTube Transcript",
+        "category": "AI, Research and Media-native",
+        "website": "https://transcriptapi.com",
+        "description": "Hosted REST API and MCP service for extracting YouTube video transcripts, timestamps, and channel uploads at scale.",
+        "auth_methods": ["Bearer API Key (Authorization: Bearer <key>)"],
+        "auth_primary": "Bearer API Key",
+        "access_model": "Self-Serve (Free Tier with 100 trial credits)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST v2 (transcriptapi.com/api/v2)", "Model Context Protocol Server"],
+            "breadth": "Medium (Transcripts, video info, search, channel playlists)",
+            "mcp_status": "Official MCP Server Available",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. Instant key generation on signup; bypasses YouTube IP bans and rate limits."
+        },
+        "evidence": {
+            "docs_url": "https://transcriptapi.com",
+            "verification_notes": "Official MCP server and OpenAPI 3.0 explorer; provides clean JSON transcripts with timestamps."
+        }
+    },
+    {
+        "id": 100,
+        "name": "Grain",
+        "category": "AI, Research and Media-native",
+        "website": "https://grain.com",
+        "description": "AI meeting intelligence platform that records, transcribes, and extracts key insights from customer calls.",
+        "auth_methods": ["Personal Access Token (Bearer + Public-Api-Version header)", "Workspace Access Tokens"],
+        "auth_primary": "Bearer Token",
+        "access_model": "Self-Serve (Free Plan with instant PAT generation)",
+        "is_self_serve": True,
+        "api_surface": {
+            "protocols": ["REST (api.grain.com)", "Webhooks", "Model Context Protocol"],
+            "breadth": "Medium (Recordings, transcripts, highlights, notes)",
+            "mcp_status": "Native MCP Support",
+            "spec_available": True
+        },
+        "buildability": {
+            "verdict": "Ready / Easy Win",
+            "blocker": "None. PAT generated in Account Settings -> Integrations -> Personal API."
+        },
+        "evidence": {
+            "docs_url": "https://grain.com/app/settings/integrations?tab=api",
+            "verification_notes": "Native MCP support and REST API with version header (Public-Api-Version: 2024-10-01)."
+        }
+    }
+]
+
+def main():
+    target_path = Path("e:/Employee Management System/composio-research-agent/data/apps_100.json")
+    print(f"Total apps assembled: {len(apps_data)}")
+    assert len(apps_data) == 100, f"Expected exactly 100 apps, got {len(apps_data)}"
+
+    # Validate categories
+    categories = set(app["category"] for app in apps_data)
+    print(f"Categories ({len(categories)}): {sorted(list(categories))}")
+    assert len(categories) == 10, f"Expected 10 categories, got {len(categories)}"
+
+    # Validate ID sequencing
+    ids = [app["id"] for app in apps_data]
+    assert ids == list(range(1, 101)), "App IDs are not strictly 1 to 100 sequential!"
+
+    with open(target_path, "w", encoding="utf-8") as f:
+        json.dump(apps_data, f, indent=2, ensure_ascii=False)
+    
+    print(f"Successfully saved verified dataset to {target_path}")
+
+if __name__ == "__main__":
+    main()
